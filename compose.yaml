@@ -1,0 +1,59 @@
+secrets:
+  database-password:
+    file: build/secrets/DATABASE_PASSWORD
+
+services:
+  app:
+    build:
+      dockerfile: build/Dockerfile
+      context: .
+      target: dev
+    volumes:
+      - ./:/var/www/html/
+    ports:
+      - "8999:8080"
+    environment:
+      COMPOSER_ALLOW_SUPERUSER: 1
+      MAILER_DSN: smtp://mail:1025
+    env_file:
+      - .env
+    secrets:
+      - source: database-password
+        target: /run/secrets/DATABASE_PASSWORD/value
+
+  database:
+    image: mysql:8.0.34
+    command: mysqld --innodb_redo_log_capacity=2147483648 # Increase the innodb_redo_log_capacity to 2 GiB
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD_FILE: ${DB_PASSWORD_FILE}
+    volumes:
+      - source: ./build/fixtures/
+        target: /docker-entrypoint-initdb.d/
+        type: bind
+    secrets:
+      - source: database-password
+        target: /run/secrets/DATABASE_PASSWORD/value
+    ports:
+      - "3307:3306"
+
+  mail:
+    image: mailhog/mailhog:v1.0.1
+    platform: linux/amd64
+    ports:
+      - "8027:8025"
+
+  pma:
+    image: phpmyadmin:5-apache
+    environment:
+      - PMA_HOST=database
+      - MYSQL_DATABASE=${DB_NAME}
+      - PMA_USER=${DB_USER}
+      - PMA_PASSWORD_FILE=${DB_PASSWORD_FILE}
+    secrets:
+      - source: database-password
+        target: /run/secrets/DATABASE_PASSWORD/value
+    ports:
+      - "8099:80"

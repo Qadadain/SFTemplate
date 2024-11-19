@@ -1,0 +1,63 @@
+.liquid {
+    --liquid-min-margin: 2rem;
+    --liquid-content: 840px;
+
+    display: grid;
+    grid-template-columns:
+   [liquid-start] minmax(var(--liquid-min-margin), 1fr)
+   [content-start] minmax(0, calc(var(--liquid-content) / 2))
+   [half] minmax(0, calc(var(--liquid-content) / 2))
+   [content-end] minmax(var(--liquid-min-margin), 1fr)
+   [liquid-end];
+
+    & > * {
+        grid-column: content;
+    }
+}
+
+
+/* Splash items */
+.splash,
+.splash-start,
+.splash-end,
+.splash-half-start,
+.splash-half-end {
+    display: grid;
+    grid-template-columns: subgrid;
+
+    & > * {
+        grid-column: content;
+    }
+}
+
+.splash {
+    grid-column: liquid;
+}
+.splash-start {
+    grid-column: liquid-start / content-end;
+}
+.splash-end {
+    grid-column: content-start / liquid-end;
+}
+.splash-half-start {
+    grid-column: liquid-start / half;
+
+    & > * {
+        grid-column: content-start / half;
+    }
+}
+.splash-half-end {
+    grid-column: half / liquid-end;
+
+    & > * {
+        grid-column: half / content-end;
+    }
+}
+
+/* Hero image */
+.hero-img {
+    justify-self: center;
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+}
